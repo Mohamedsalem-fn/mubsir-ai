@@ -384,10 +384,15 @@ def run_nsfw(image: Image.Image) -> list[dict]:
 
 # ── BlazeFace Detection ───────────────────────────────────────────────────────
 def run_blazeface(image: Image.Image) -> list[dict]:
+    """
+    Run BlazeFace TFLite. Parses all output tensor shapes to find
+    the boxes [N,4] and scores [N,1] regardless of batch/extra dims.
+    Falls back to safe empty list on any failure.
+    """
     interp  = load_blazeface_model()
     in_det  = interp.get_input_details()
     out_det = interp.get_output_details()
-    size    = in_det[0]["shape"][1]
+    size    = int(in_det[0]["shape"][1])
     dtype   = in_det[0]["dtype"]
 
     tensor = preprocess_tflite(image, size, dtype)
@@ -395,51 +400,47 @@ def run_blazeface(image: Image.Image) -> list[dict]:
     interp.invoke()
 
     try:
-        boxes_idx = scores_idx = None
+        # Collect all outputs, squeeze batch dim
+        tensors = []
         for det in out_det:
-            sh = det["shape"]
-            if len(sh) >= 2 and sh[-1] == 4:
-                boxes_idx = det["index"]
-            elif len(sh) >= 2 and sh[-1] == 1:
-                scores_idx = det["index"]
+            t = interp.get_tensor(det["index"])
+            # squeeze leading batch dim if present
+            if t.ndim == 3 and t.shape[0] == 1:
+                t = t[0]   # [N, K]
+            elif t.ndim == 2 and t.shape[0] == 1:
+                t = t[0]   # [K]
+            tensors.append((det, t))
 
-        if boxes_idx is None:
-            return _cv_faces(image)
+        # Find boxes tensor: 2-D, last dim == 4
+        boxes_t  = next((t for _, t in tensors if t.ndim == 2 and t.shape[-1] == 4), None)
+        # Find scores tensor: last dim == 1 or 1-D with same N
+        scores_t = next((t for _, t in tensors if t.ndim == 2 and t.shape[-1] == 1), None)
+        if scores_t is None:
+            scores_t = next((t for _, t in tensors if t.ndim == 1), None)
 
-        raw_boxes  = interp.get_tensor(boxes_idx)
-        raw_boxes  = raw_boxes[0] if raw_boxes.ndim == 3 else raw_boxes
-        if scores_idx:
-            raw_sc = interp.get_tensor(scores_idx)
-            raw_sc = raw_sc[0] if raw_sc.ndim == 3 else raw_sc
-            scores = raw_sc[:, 0] if raw_sc.ndim == 2 else raw_sc
-            scores = 1.0 / (1.0 + np.exp(-scores))
+        if boxes_t is None:
+            return []   # BlazeFace not usable — skip face detection
+
+        if scores_t is not None:
+            sc = scores_t[:, 0] if scores_t.ndim == 2 else scores_t
+            sc = 1.0 / (1.0 + np.exp(-sc.astype(np.float32)))
         else:
-            scores = np.ones(len(raw_boxes))
+            sc = np.ones(len(boxes_t), dtype=np.float32)
 
         faces = []
-        for box, score in zip(raw_boxes, scores):
+        for box, score in zip(boxes_t, sc):
             if float(score) > 0.5:
-                b = box.copy()
-                if b.max() > 1.5:
+                b = box.astype(np.float32).copy()
+                if b.max() > 1.5:        # pixel coords → normalize
                     b /= float(size)
-                faces.append({"box": b.tolist(), "score": float(score), "gender": None, "age": None})
-        return faces if faces else _cv_faces(image)
+                # clamp to [0, 1]
+                b = np.clip(b, 0.0, 1.0)
+                faces.append({"box": b.tolist(), "score": float(score),
+                               "gender": None, "age": None})
+        return faces
 
     except Exception:
-        return _cv_faces(image)
-
-
-def _cv_faces(image: Image.Image) -> list[dict]:
-    """OpenCV Haar-cascade fallback face detector."""
-    bgr     = cv2.cvtColor(np.array(image.convert("RGB")), cv2.COLOR_RGB2BGR)
-    gray    = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
-    cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-    rects   = cascade.detectMultiScale(gray, 1.1, 4, minSize=(30, 30))
-    h, w    = bgr.shape[:2]
-    return [
-        {"box": [y/h, x/w, (y+fh)/h, (x+fw)/w], "score": 0.9, "gender": None, "age": None}
-        for (x, y, fw, fh) in rects
-    ]
+        return []   # never crash — face detection is optional
 
 
 # ── FaceRes Gender/Age ────────────────────────────────────────────────────────
