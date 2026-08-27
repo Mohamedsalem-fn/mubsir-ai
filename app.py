@@ -546,8 +546,13 @@ def make_decision(nsfw: list[dict], faces: list[dict], sensitivity: float) -> di
 
     reasons, is_unsafe = [], False
 
+    # 🚨 القاعدة الصارمة جداً: أي نسبة NSFW تتجاوز 1% تعني أن الصورة غير آمنة
+    if nsfw_total > 0.01:
+        is_unsafe = True
+        reasons.append(f"🚨 اكتشاف محتوى غير آمن بنسبة ({nsfw_total*100:.1f}%)")
+
     female_thr = FACE_NSFW_THR * (1 - sensitivity * 0.5)
-    if has_female and nsfw_total > female_thr:
+    if not is_unsafe and has_female and nsfw_total > female_thr:
         is_unsafe = True
         reasons.append(f"👩 وجود أنثى مع نسبة NSFW ({nsfw_total*100:.1f}%) > {female_thr*100:.1f}%")
 
