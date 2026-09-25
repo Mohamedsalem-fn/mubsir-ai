@@ -7,7 +7,10 @@
 
 import streamlit as st
 import numpy as np
-import tensorflow as tf
+try:
+    import tflite_runtime.interpreter as tflite
+except ImportError:
+    import tensorflow.lite as tflite
 from PIL import Image, ImageFilter
 import io
 
@@ -64,7 +67,7 @@ NSFW_CLASSES = ['Hentai', 'Porn', 'Sexy']
 
 @st.cache_resource
 def load_model():
-    interpreter = tf.lite.Interpreter(model_path=MODEL_PATH)
+    interpreter = tflite.Interpreter(model_path=MODEL_PATH)
     interpreter.allocate_tensors()
     return interpreter
 
