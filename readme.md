@@ -26,7 +26,7 @@ The system integrates an ensemble of Computer Vision models for real-time NSFW i
 
 | Domain | Technology / Model | Purpose | Format |
 |--------|-------------------|---------|--------|
-| **Vision** | `nsfw.tflite` | 5-class NSFW image classifier | TFLite (22 MB) |
+| **Vision** | `model.tflite` | 5-class NSFW image classifier | TFLite (22 MB) |
 | **Vision** | `blazeface.tflite` | Real-time face detector | TFLite (224 KB) |
 | **Vision** | `faceres.json/.bin` | Gender & age predictor (MobileNet) | TF.js Graph Model (6.8 MB) |
 | **NLP** | Large Language Models (LLMs) | Contextual text & behavior analysis | API / Edge Integration |
@@ -44,7 +44,7 @@ Image Upload / Screen Capture
     │
     ▼
 ┌─────────────────────┐
-│  NSFW TFLite Model  │ → 5-class probabilities (Drawing, Hentai, Neutral, Porn, Sexy)
+│  model.tflite       │ → 5-class probabilities (Drawing, Hentai, Neutral, Porn, Sexy)
 │  224×224 input      │ + Anti-SFW Bias Correction (SFW × 0.6)
 └─────────────────────┘
     │
@@ -94,7 +94,7 @@ To prevent threats that bypass visual filters, Mubsir AI integrates LLMs to anal
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/MohamedSalem/mubsir-ai.git
+git clone https://github.com/Mohamedsalem-fn/mubsir-ai.git
 cd mubsir-ai
 
 # 2. Create virtual environment
@@ -113,10 +113,10 @@ streamlit run app.py
 Place the following model files in the **same directory** as `app.py`:
 
 ```
-v1/
+final/
 ├── app.py
 ├── requirements.txt
-├── nsfw.tflite        ← 5-class NSFW classifier (Custom trained on 130k images)
+├── model.tflite        ← 5-class NSFW classifier (Custom trained on 130k images)
 ├── blazeface.tflite   ← Face detector
 ├── faceres.json       ← TF.js model topology
 └── faceres.bin        ← TF.js model weights
@@ -131,14 +131,14 @@ v1/
    git init
    git add .
    git commit -m "feat: initial Mubsir AI deployment"
-   git remote add origin https://github.com/<your-username>/mubsir-ai.git
+   git remote add origin https://github.com/Mohamedsalem-fn/mubsir-ai.git
    git push -u origin main
    ```
 
 2. **Go to [share.streamlit.io](https://share.streamlit.io)**
 3. **Click "New app"** → Select your repository
 4. **Configure**:
-   - Repository: `<your-username>/mubsir-ai`
+   - Repository: `Mohamedsalem-fn/mubsir-ai`
    - Branch: `main`
    - Main file: `app.py`
 5. **Deploy!** Streamlit Cloud handles the environment setup.
@@ -177,7 +177,6 @@ numpy>=1.24.0
 Pillow>=10.0.0
 opencv-python-headless>=4.8.0
 tensorflow-cpu>=2.15.0
-tensorflowjs>=4.18.0
 ```
 
 ---
