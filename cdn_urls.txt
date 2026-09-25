@@ -1,0 +1,9 @@
+https://cdn.jsdelivr.net/npm/@vladmandic/human/models/blazeface.json
+https://cdn.jsdelivr.net/npm/@vladmandic/human/models/blazeface-back.json
+https://cdn.jsdelivr.net/npm/@vladmandic/human/models/faceres.json
+
+# ملاحظة:
+# هذه النماذج تُحمَّل تلقائياً من CDN عند تشغيل HaramBlur
+# لتحميلها يدوياً استخدم:
+# wget https://cdn.jsdelivr.net/npm/@vladmandic/human/models/blazeface.json
+# wget https://cdn.jsdelivr.net/npm/@vladmandic/human/models/faceres.json
