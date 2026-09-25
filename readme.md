@@ -8,6 +8,8 @@
 <img src="https://img.shields.io/badge/LLM-Integrated-8A2BE2?style=for-the-badge" />
 <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
 
+### 🔗 [Live Web App (Streamlit)](https://mubsir-ai.streamlit.app/) | 💻 [GitHub Repository](https://github.com/Mohamedsalem-fn/mubsir-ai)
+
 **نظام الكشف الذكي متعدد الوسائط لحماية الأسرة الرقمية**
 
 *Intelligent Multimodal AI (Computer Vision + LLMs) for comprehensive child protection against NSFW content and predatory behavior.*

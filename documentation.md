@@ -3,6 +3,8 @@
 <div align="center">
   <h3>The Intelligent Shield for Digital Family Protection</h3>
   <p><i>A Comprehensive Multimodal AI Ecosystem for Proactive Threat Detection</i></p>
+  <br>
+  <p><b>🌍 Live Web App:</b> <a href="https://mubsir-ai.streamlit.app/">mubsir-ai.streamlit.app</a> &nbsp;|&nbsp; <b>💻 Source Code:</b> <a href="https://github.com/Mohamedsalem-fn/mubsir-ai">GitHub Repository</a></p>
 </div>
 
 ---
